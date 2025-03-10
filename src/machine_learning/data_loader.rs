@@ -214,7 +214,7 @@ mod tests {
     use ndarray::array;
 
     // Attention: Theses tests require the MNIST dataset to be downloaded via the python pytorch library
-    const MNIST_PATH: &str = "./data/mnist/";
+    const MNIST_PATH: &str = "./data/MNIST/raw";
 
     #[test]
     fn test_dir_loader() {

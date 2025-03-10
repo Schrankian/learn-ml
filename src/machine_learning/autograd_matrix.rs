@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use crate::utils;
 use ndarray::{Array2, Zip};
+use ndarray_conv::{ConvMode, PaddingMode, ConvFFTExt, ConvExt};
 use rand::Rng;
 use std::cell::RefCell;
 use std::fmt;
@@ -14,14 +15,14 @@ type MatrixNodeRef = Rc<RefCell<MatrixNode>>;
 
 /// This type defines an alias for a dynamic dispatch function that takes the pointer to an 2D Array and returns a Vec<Array2<f32>> (the gradient contributions) <br>
 /// The root node is always None, the rest of the nodes have a back_pass function that calculates the gradient contributions
-/// Explanation: 
+/// Explanation:
 /// > - The Box<> is a smart pointer, that allocates the function on the heap, so it can be stored in the Node struct as a callback <br>
 /// > - The dyn keyword is used to create a trait object, which allows for dynamic dispatch <br>
 /// > - The Fn(&Array2<f32>) -> Vec<Array2<f32>> definies a function signature that takes an &Array2<f32> and returns a Vec<Array2<f32>>. E.g. it takes in the seed
 /// of the last node and returns the gradient contributions of the current node, with respect to each parent node (e.g. if 1 parent -> the vec.length() == 1, if 2 parents -> vec.length() == 2) <br>
 /// > - The 'static lifetime is used to specify that the function lives for the entire duration of the program
 /// It is also rensponsible for allowing the move closure, which is used to move (or copy) any referenced (potential temporary) variables into the closure
-/// 
+///
 /// Difference to just defining it as fn(&Array2<f32>) -> Vec<Array2<f32>:
 /// It is a function signature for static dispatch, it cannot capture variables from the environment, and is therefore not used here
 type BackPass = Option<Box<dyn Fn(&Array2<f32>) -> Vec<Array2<f32>> + 'static>>;
@@ -246,7 +247,7 @@ impl Matrix {
         // Create a mask for all values greater than zero, which can be also used for the back pass
         let mask = node.data.mapv(|x| if x > 0.0 { 1.0 } else { 0.0 });
         // Apply the mask to the data
-        let data = node.data.clone() * &mask;
+        let data = &node.data * &mask;
         // Very important: Drop the borrow here, because it would conflict with the Self::new method which will try to borrow the node mutably
         drop(node);
 
@@ -257,6 +258,33 @@ impl Matrix {
             vec![grad]
         }));
         Self::new(data, vec![self.node.clone()], back_pass)
+    }
+
+    /// Convolves the matrix with a kernel
+    /// The kernel is a 2D matrix, which is applied to the input matrix
+    pub fn convolute(&self, kernel: &Self) -> Self {
+        let node = self.node.borrow();
+        let kernel_node = kernel.node.borrow();
+
+        // Convolution parameters
+        let conv_mode = ConvMode::Valid;
+        let padding_mode = PaddingMode::Zeros;
+        let data = if kernel_node.data.shape()[0] > 11 || kernel_node.data.shape()[1] > 11 {
+            // Use FFT convolution for large kernels
+            node.data.conv_fft(&kernel_node.data, conv_mode, padding_mode)
+        } else {
+            // Use normal convolution for smaller kernels
+            node.data.conv(&kernel_node.data, conv_mode, padding_mode)
+        }.expect("Error: Convolution failed");
+        drop(node);
+        drop(kernel_node);
+
+        let back_pass: BackPass = Some(Box::new(move |_| {
+            // TODO
+            vec![]
+        }));
+
+        Self::new(data, vec![self.node.clone(), kernel.node.clone()], back_pass)
     }
 
     /// Mean squared error (MSE) loss

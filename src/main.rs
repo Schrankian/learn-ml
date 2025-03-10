@@ -192,11 +192,11 @@ struct Args {
     mode: Mode,
 
     /// The path to the mnist data directory
-    #[arg(long, default_value_t=String::from("./data/mnist"))]
+    #[arg(long, default_value_t=String::from("./data/MNIST/raw"))]
     data_path: String,
 
     /// The path to a pretrained model (or the path it should be stored in)
-    #[arg(long, default_value_t=String::from("model.bin"))]
+    #[arg(long, default_value_t=String::from("models/model.bin"))]
     model_path: String,
 
     /// The path to the image, if mode is set to normal

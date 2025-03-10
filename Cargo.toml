@@ -9,6 +9,7 @@ byteorder = "1.5.0"
 clap = { version = "4.5.31", features = ["derive"] }
 image = "0.25.5"
 ndarray = { version = "0.16.1", features = ["blas"] }
+ndarray-conv = "0.4.1"
 num-traits = "0.2.19"
 openblas-src = { version = "0.10.11", features = ["cblas", "system"] }
 rand = "0.9.0"

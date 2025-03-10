@@ -11,6 +11,9 @@ stored under `data/own/`, to test the model's ability to predict my handwriting.
 
 ### Inspiration
 The `inspiration` directory contains a Jupyter notebook outlining the general implementation plan and serving as a reference for the steps followed.
+<br>
+I also implemented the U-Net Architekture for the same Dataset, which is really effective for this data. It achived 80% on the first epoch and 99.4% after only 10.
+So the next logical step would be to code it in my own implementation :)
 
 ### Models
 The `models` directory stores the trained models. The current model, `model.bin`, has around 83% accuracy on the test dataset, which is satisfactory for a first attempt.
@@ -28,6 +31,7 @@ The `src` directory contains the neural network implementation, divided into thr
 - `ndarray`: Base for the Matrix datatype.
 - `blas-src`: Provides BLAS bindings to `ndarray`.
 - `openblas-src`: Uses the system's BLAS library.
+- `ndarray-conv`: Provides efficient convolution for ndarray (both normal and fft)
 - `byteorder`: For loading the MNIST dataset correctly.
 - `image`: Simplifies loading and converting images to grayscale.
 - `rand`: Random number generator.

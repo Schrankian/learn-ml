@@ -14,6 +14,9 @@ pub mod Optimizer {
 
     /// Perform a gradient descent step on all weights in the model
     /// Does nothing if no weights are present
+    /// To be honest, this is not true sgd, as it does support batch training (But still shuffles the dataset if used with the DataLoader)
+    /// Something like Mini-batch gradient descent (MBGD. Batch size = ~64) or Full-batch gradient descent (FBGD. Batch size = full dataset) would be more accurate
+    /// However, the term SGD is often used in literature to describe all of these
     pub const SGD: Signature = |lr, layers| {
         // The gradient descent call-order is currently as follows:
         // 1. This optimizer function is called
